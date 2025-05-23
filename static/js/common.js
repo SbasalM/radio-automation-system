@@ -225,10 +225,65 @@ const RadioAutomation = {
     }
 };
 
+// Theme management
+const ThemeManager = {
+    // Get current theme from localStorage or default to 'light'
+    getCurrentTheme: function() {
+        return localStorage.getItem('theme') || 'light';
+    },
+    
+    // Save theme preference to localStorage
+    saveTheme: function(theme) {
+        localStorage.setItem('theme', theme);
+    },
+    
+    // Apply theme to the document
+    applyTheme: function(theme) {
+        if (theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('theme-icon').classList.remove('bi-sun-fill');
+            document.getElementById('theme-icon').classList.add('bi-moon-fill');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            document.getElementById('theme-icon').classList.remove('bi-moon-fill');
+            document.getElementById('theme-icon').classList.add('bi-sun-fill');
+        }
+    },
+    
+    // Toggle between light and dark themes
+    toggleTheme: function() {
+        const currentTheme = this.getCurrentTheme();
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        
+        this.saveTheme(newTheme);
+        this.applyTheme(newTheme);
+        
+        // Show a toast notification
+        RadioAutomation.showToast(`Switched to ${newTheme} theme`, 'info');
+    },
+    
+    // Initialize theme
+    init: function() {
+        // Set initial theme based on user preference
+        const savedTheme = this.getCurrentTheme();
+        this.applyTheme(savedTheme);
+        
+        // Add event listener to theme toggle button
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                ThemeManager.toggleTheme();
+            });
+        }
+    }
+};
+
 // Initialize common features when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     RadioAutomation.initTooltips();
     RadioAutomation.initAlerts();
+    ThemeManager.init();
 });
 
 // Export for use in other scripts
