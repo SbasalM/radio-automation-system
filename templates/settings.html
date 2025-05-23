@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Radio Automation System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h2 mb-4">
+            <i class="bi bi-gear"></i> System Settings
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Settings Navigation -->
+    <div class="col-md-3">
+        <div class="list-group">
+            <a href="#general" class="list-group-item list-group-item-action active" 
+               data-bs-toggle="list">
+                <i class="bi bi-gear-wide"></i> General Settings
+            </a>
+            <a href="#processing" class="list-group-item list-group-item-action" 
+               data-bs-toggle="list">
+                <i class="bi bi-sliders"></i> Processing Defaults
+            </a>
+            <a href="#templates" class="list-group-item list-group-item-action" 
+               data-bs-toggle="list">
+                <i class="bi bi-file-earmark-text"></i> Processing Templates
+            </a>
+            <a href="#storage" class="list-group-item list-group-item-action" 
+               data-bs-toggle="list">
+                <i class="bi bi-hdd"></i> Storage & Cleanup
+            </a>
+            <a href="#system" class="list-group-item list-group-item-action" 
+               data-bs-toggle="list">
+                <i class="bi bi-cpu"></i> System Information
+            </a>
+        </div>
+    </div>
+    
+    <!-- Settings Content -->
+    <div class="col-md-9">
+        <div class="tab-content">
+            <!-- General Settings -->
+            <div class="tab-pane fade show active" id="general">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">General Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="general-settings-form">
+                            <div class="mb-3">
+                                <label for="station_name" class="form-label">Station Name</label>
+                                <input type="text" class="form-control" id="station_name" 
+                                       placeholder="Your Radio Station">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="timezone" class="form-label">Time Zone</label>
+                                <select class="form-select" id="timezone">
+                                    <option value="America/New_York">Eastern Time</option>
+                                    <option value="America/Chicago">Central Time</option>
+                                    <option value="America/Denver">Mountain Time</option>
+                                    <option value="America/Los_Angeles">Pacific Time</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="date_format" class="form-label">Date Format</label>
+                                <select class="form-select" id="date_format">
+                                    <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                    <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                    <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Save General Settings
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Processing Defaults -->
+            <div class="tab-pane fade" id="processing">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Default Processing Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="processing-settings-form">
+                            <p class="text-muted">These settings will be used as defaults for new shows.</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="default_format" class="form-label">Output Format</label>
+                                        <select class="form-select" id="default_format">
+                                            <option value="wav" selected>WAV</option>
+                                            <option value="mp3">MP3</option>
+                                            <option value="aiff">AIFF</option>
+                                            <option value="flac">FLAC</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="default_sample_rate" class="form-label">Sample Rate</label>
+                                        <select class="form-select" id="default_sample_rate">
+                                            <option value="44100" selected>44.1 kHz</option>
+                                            <option value="48000">48 kHz</option>
+                                            <option value="32000">32 kHz</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="default_bit_depth" class="form-label">Bit Depth</label>
+                                        <select class="form-select" id="default_bit_depth">
+                                            <option value="16" selected>16-bit</option>
+                                            <option value="24">24-bit</option>
+                                            <option value="32">32-bit</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="default_channels" class="form-label">Channels</label>
+                                        <select class="form-select" id="default_channels">
+                                            <option value="2" selected>Stereo</option>
+                                            <option value="1">Mono</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="default_normalize" checked>
+                                    <label class="form-check-label" for="default_normalize">
+                                        Enable normalization by default
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Save Processing Defaults
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Processing Templates -->
+            <div class="tab-pane fade" id="templates">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Processing Templates</h5>
+                            <button class="btn btn-sm btn-success" onclick="addTemplate()">
+                                <i class="bi bi-plus-circle"></i> Add Template
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if templates %}
+                            <div class="list-group">
+                                {% for template in templates %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">{{ template.name }}</h6>
+                                                <p class="mb-1">{{ template.description }}</p>
+                                                <small class="text-muted">
+                                                    {{ template.output_format.upper() }} • 
+                                                    {{ template.sample_rate }}Hz • 
+                                                    {{ template.bit_depth }}-bit
+                                                </small>
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-sm btn-outline-primary" 
+                                                        onclick="editTemplate({{ template.id }})">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" 
+                                                        onclick="deleteTemplate({{ template.id }})">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center">
+                                No processing templates configured. Create templates for common 
+                                processing tasks to save time.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Storage & Cleanup -->
+            <div class="tab-pane fade" id="storage">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Storage & Cleanup Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="storage-settings-form">
+                            <div class="mb-3">
+                                <label class="form-label">Storage Location</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" value="/processed" readonly>
+                                    <button class="btn btn-outline-secondary" type="button">Browse</button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="retention_days" class="form-label">
+                                    Keep Processed Files For
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="retention_days" 
+                                           value="30" min="1" max="365">
+                                    <span class="input-group-text">days</span>
+                                </div>
+                                <small class="form-text text-muted">
+                                    Files older than this will be automatically deleted
+                                </small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="max_storage" class="form-label">Maximum Storage Usage</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="max_storage" 
+                                           value="100" min="1">
+                                    <span class="input-group-text">GB</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="auto_cleanup" checked>
+                                    <label class="form-check-label" for="auto_cleanup">
+                                        Enable automatic cleanup
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Save Storage Settings
+                            </button>
+                            
+                            <button type="button" class="btn btn-warning ms-2" onclick="cleanupNow()">
+                                <i class="bi bi-trash"></i> Run Cleanup Now
+                            </button>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <h6>Storage Statistics</h6>
+                        <div class="progress mb-3">
+                            <div class="progress-bar" role="progressbar" style="width: 25%">
+                                25 GB / 100 GB Used
+                            </div>
+                        </div>
+                        
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <small class="text-muted">Total Files</small>
+                                <h5>1,234</h5>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Total Size</small>
+                                <h5>25 GB</h5>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Oldest File</small>
+                                <h5>30 days</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Information -->
+            <div class="tab-pane fade" id="system">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">System Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>Software Versions</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Radio Automation System</td>
+                                <td><strong>v1.0.0</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Python</td>
+                                <td><strong>3.9.0</strong></td>
+                            </tr>
+                            <tr>
+                                <td>FFmpeg</td>
+                                <td><strong>4.4.0</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Database</td>
+                                <td><strong>SQLite 3.36.0</strong></td>
+                            </tr>
+                        </table>
+                        
+                        <hr>
+                        
+                        <h6>System Status</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Audio Processing</td>
+                                <td><span class="badge bg-success">Operational</span></td>
+                            </tr>
+                            <tr>
+                                <td>Database Connection</td>
+                                <td><span class="badge bg-success">Connected</span></td>
+                            </tr>
+                            <tr>
+                                <td>Storage Access</td>
+                                <td><span class="badge bg-success">Available</span></td>
+                            </tr>
+                            <tr>
+                                <td>FFmpeg</td>
+                                <td><span class="badge bg-success">Installed</span></td>
+                            </tr>
+                        </table>
+                        
+                        <hr>
+                        
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" onclick="checkUpdates()">
+                                <i class="bi bi-cloud-download"></i> Check for Updates
+                            </button>
+                            <button class="btn btn-secondary" onclick="downloadLogs()">
+                                <i class="bi bi-file-earmark-text"></i> Download Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize settings tabs
+$(document).ready(function() {
+    // Handle form submissions
+    $('#general-settings-form').on('submit', function(e) {
+        e.preventDefault();
+        alert('General settings saved!');
+    });
+    
+    $('#processing-settings-form').on('submit', function(e) {
+        e.preventDefault();
+        alert('Processing defaults saved!');
+    });
+    
+    $('#storage-settings-form').on('submit', function(e) {
+        e.preventDefault();
+        alert('Storage settings saved!');
+    });
+});
+
+function addTemplate() {
+    // In real app, show modal to create template
+    alert('Template creation feature coming soon!');
+}
+
+function editTemplate(id) {
+    alert('Edit template ' + id);
+}
+
+function deleteTemplate(id) {
+    if (confirm('Delete this template?')) {
+        alert('Template deleted');
+    }
+}
+
+function cleanupNow() {
+    if (confirm('Run cleanup now? This will delete old files according to your retention settings.')) {
+        alert('Cleanup started...');
+    }
+}
+
+function checkUpdates() {
+    alert('Checking for updates...');
+}
+
+function downloadLogs() {
+    alert('Downloading system logs...');
+}
+</script>
+{% endblock %}

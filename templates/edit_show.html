@@ -212,10 +212,9 @@
                 <p><strong>Show ID:</strong> {{ show.id }}</p>
                 
                 <h6>Recent Files</h6>
-                {% set recent_files = show.processed_files.order_by(ProcessedFile.processed_at.desc()).limit(5).all() %}
-                {% if recent_files %}
+                {% if show.processed_files.count() > 0 %}
                     <ul class="list-unstyled">
-                        {% for file in recent_files %}
+                        {% for file in show.processed_files.limit(5).all() %}
                             <li class="mb-1">
                                 <small>
                                     <i class="bi bi-file-earmark-music"></i>

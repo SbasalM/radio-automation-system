@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Files - Radio Automation System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h2 mb-4">
+            <i class="bi bi-cloud-upload"></i> Upload Audio Files
+        </h1>
+    </div>
+</div>
+
+<form id="upload-form" method="POST" enctype="multipart/form-data">
+    <div class="row">
+        <!-- File Upload Area -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Select Files</h5>
+                </div>
+                <div class="card-body">
+                    <div class="file-upload-area" id="upload-area">
+                        <i class="bi bi-cloud-upload fs-1 text-muted"></i>
+                        <h4 class="mt-3">Drag and drop files here</h4>
+                        <p class="text-muted">or click to browse</p>
+                        <input type="file" id="file-input" name="files" multiple 
+                               accept=".wav,.mp3,.aiff,.flac,.m4a" style="display: none;">
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('file-input').click();">
+                            <i class="bi bi-folder-open"></i> Browse Files
+                        </button>
+                        <p class="text-muted mt-3">
+                            <small>Supported formats: WAV, MP3, AIFF, FLAC, M4A • Max file size: 500MB</small>
+                        </p>
+                    </div>
+                    
+                    <!-- Selected Files List -->
+                    <div id="file-list" class="mt-4" style="display: none;">
+                        <h6>Selected Files:</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Filename</th>
+                                        <th>Show</th>
+                                        <th>Date</th>
+                                        <th>Size</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="file-list-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Processing Options -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Processing Options</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Output Format</label>
+                        <select name="format" class="form-select">
+                            <option value="wav" selected>WAV (Broadcast Standard)</option>
+                            <option value="mp3">MP3 (Compressed)</option>
+                            <option value="aiff">AIFF</option>
+                            <option value="flac">FLAC (Lossless)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="normalize" 
+                                   id="normalize" checked>
+                            <label class="form-check-label" for="normalize">
+                                Normalize Audio
+                            </label>
+                            <small class="form-text text-muted d-block">
+                                Adjusts volume to standard broadcast level
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3" id="normalize-options">
+                        <label class="form-label">Normalize Level (dB)</label>
+                        <input type="number" name="normalize_level" class="form-control" 
+                               value="-1.0" min="-30" max="0" step="0.1">
+                        <small class="form-text text-muted">
+                            Standard broadcast level is -1.0 dB
+                        </small>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6>Advanced Options</h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Sample Rate</label>
+                        <select name="sample_rate" class="form-select">
+                            <option value="44100" selected>44.1 kHz (CD Quality)</option>
+                            <option value="48000">48 kHz</option>
+                            <option value="32000">32 kHz</option>
+                            <option value="22050">22.05 kHz</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Bit Depth</label>
+                        <select name="bit_depth" class="form-select">
+                            <option value="16" selected>16-bit (Standard)</option>
+                            <option value="24">24-bit (High Quality)</option>
+                            <option value="32">32-bit (Professional)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Channels</label>
+                        <select name="channels" class="form-select">
+                            <option value="2" selected>Stereo</option>
+                            <option value="1">Mono</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Process Button -->
+            <div class="d-grid gap-2 mt-3">
+                <button type="submit" class="btn btn-success btn-lg" id="process-btn" disabled>
+                    <i class="bi bi-play-circle"></i> Process Files
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Processing Progress Modal -->
+<div class="modal fade" id="progressModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Processing Files</h5>
+            </div>
+            <div class="modal-body">
+                <p id="progress-message">Processing files, please wait...</p>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedFiles = [];
+
+// Initialize drag and drop
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    // Highlight drop area when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    // Handle dropped files
+    uploadArea.addEventListener('drop', handleDrop, false);
+    
+    // Handle file selection
+    fileInput.addEventListener('change', function(e) {
+        handleFiles(e.target.files);
+    });
+    
+    // Handle normalize checkbox
+    document.getElementById('normalize').addEventListener('change', function() {
+        document.getElementById('normalize-options').style.display = this.checked ? 'block' : 'none';
+    });
+    
+    // Handle form submission
+    document.getElementById('upload-form').addEventListener('submit', function(e) {
+        if (selectedFiles.length === 0) {
+            e.preventDefault();
+            alert('Please select at least one file to process.');
+            return false;
+        }
+        
+        // Show progress modal
+        const modal = new bootstrap.Modal(document.getElementById('progressModal'));
+        modal.show();
+    });
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+function highlight(e) {
+    document.getElementById('upload-area').classList.add('drag-over');
+}
+
+function unhighlight(e) {
+    document.getElementById('upload-area').classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    handleFiles(files);
+}
+
+function handleFiles(files) {
+    ([...files]).forEach(file => {
+        if (isValidAudioFile(file)) {
+            addFileToList(file);
+        } else {
+            alert(`Invalid file type: ${file.name}\nOnly audio files are allowed.`);
+        }
+    });
+}
+
+function isValidAudioFile(file) {
+    const validTypes = ['audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/aiff', 
+                       'audio/x-aiff', 'audio/flac', 'audio/mp4', 'audio/x-m4a'];
+    const validExtensions = ['.wav', '.mp3', '.aiff', '.flac', '.m4a'];
+    
+    // Check MIME type
+    if (validTypes.includes(file.type)) {
+        return true;
+    }
+    
+    // Check file extension as fallback
+    const fileName = file.name.toLowerCase();
+    return validExtensions.some(ext => fileName.endsWith(ext));
+}
+
+function addFileToList(file) {
+    // Check if file already added
+    if (selectedFiles.find(f => f.name === file.name)) {
+        return;
+    }
+    
+    selectedFiles.push(file);
+    
+    // Parse filename to extract info
+    parseFilename(file.name, function(parseResult) {
+        const tbody = document.getElementById('file-list-body');
+        const row = document.createElement('tr');
+        
+        // Filename
+        const fileCell = document.createElement('td');
+        fileCell.textContent = file.name;
+        row.appendChild(fileCell);
+        
+        // Show
+        const showCell = document.createElement('td');
+        if (parseResult.show_name) {
+            showCell.innerHTML = `<span class="badge bg-primary">${parseResult.show_name}</span>`;
+        } else {
+            showCell.innerHTML = '<span class="badge bg-warning">Unknown</span>';
+        }
+        row.appendChild(showCell);
+        
+        // Date
+        const dateCell = document.createElement('td');
+        dateCell.textContent = parseResult.date || 'No date';
+        row.appendChild(dateCell);
+        
+        // Size
+        const sizeCell = document.createElement('td');
+        sizeCell.textContent = formatFileSize(file.size);
+        row.appendChild(sizeCell);
+        
+        // Remove button
+        const actionCell = document.createElement('td');
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-sm btn-danger';
+        removeBtn.innerHTML = '<i class="bi bi-trash"></i>';
+        removeBtn.onclick = function() {
+            removeFile(file.name);
+            row.remove();
+        };
+        actionCell.appendChild(removeBtn);
+        row.appendChild(actionCell);
+        
+        tbody.appendChild(row);
+    });
+    
+    // Show file list and enable process button
+    document.getElementById('file-list').style.display = 'block';
+    document.getElementById('process-btn').disabled = false;
+}
+
+function removeFile(fileName) {
+    selectedFiles = selectedFiles.filter(f => f.name !== fileName);
+    
+    if (selectedFiles.length === 0) {
+        document.getElementById('file-list').style.display = 'none';
+        document.getElementById('process-btn').disabled = true;
+    }
+}
+
+function parseFilename(filename, callback) {
+    // Call API to parse filename
+    fetch('/api/parse-filename', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({filename: filename})
+    })
+    .then(response => response.json())
+    .then(result => callback(result))
+    .catch(error => {
+        console.error('Error parsing filename:', error);
+        callback({show_name: null, date: null});
+    });
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+</script>
+{% endblock %}

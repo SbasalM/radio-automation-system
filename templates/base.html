@@ -11,78 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     
     <!-- Custom CSS -->
-    <style>
-        body {
-            padding-top: 70px;
-            background-color: #f8f9fa;
-        }
-        .navbar-brand {
-            font-weight: bold;
-        }
-        .sidebar {
-            position: fixed;
-            top: 56px;
-            bottom: 0;
-            left: 0;
-            z-index: 100;
-            padding: 48px 0 0;
-            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-        }
-        .sidebar-sticky {
-            position: sticky;
-            top: 0;
-            height: calc(100vh - 48px);
-            padding-top: .5rem;
-            overflow-x: hidden;
-            overflow-y: auto;
-        }
-        .content-area {
-            margin-left: 0;
-        }
-        @media (min-width: 768px) {
-            .content-area {
-                margin-left: 200px;
-            }
-            .sidebar {
-                width: 200px;
-            }
-        }
-        .card {
-            margin-bottom: 20px;
-            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075);
-        }
-        .alert {
-            margin-bottom: 10px;
-        }
-        .file-upload-area {
-            border: 2px dashed #ccc;
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
-            background-color: #f8f9fa;
-            transition: all 0.3s;
-        }
-        .file-upload-area:hover {
-            border-color: #0d6efd;
-            background-color: #e7f3ff;
-        }
-        .drag-over {
-            border-color: #0d6efd;
-            background-color: #e7f3ff;
-        }
-        .status-success {
-            color: #28a745;
-        }
-        .status-error {
-            color: #dc3545;
-        }
-        .show-card {
-            transition: transform 0.2s;
-        }
-        .show-card:hover {
-            transform: translateY(-5px);
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -207,25 +136,29 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery (optional, but useful) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Common Radio Automation JS -->
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
     
     <!-- Common JavaScript -->
     <script>
-        // Update sidebar stats periodically
+        // Ensure jQuery is loaded before using it
+        if (typeof jQuery !== 'undefined') {
+            $(document).ready(function() {
+                // Update sidebar stats periodically
+                updateStats();
+                
+                // Auto-dismiss alerts after 5 seconds (backup if common.js doesn't load)
+                setTimeout(function() {
+                    $('.alert').fadeOut('slow');
+                }, 5000);
+            });
+        }
+        
+        // Update sidebar stats function
         function updateStats() {
             // This would normally fetch from an API endpoint
             // For now, just placeholder
         }
-        
-        // Initialize tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
-        
-        // Auto-dismiss alerts after 5 seconds
-        setTimeout(function() {
-            $('.alert').fadeOut('slow');
-        }, 5000);
     </script>
     
     {% block extra_js %}{% endblock %}
