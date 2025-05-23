@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Show - Radio Automation System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h2 mb-4">
+            <i class="bi bi-pencil"></i> Edit Radio Show: {{ show.name }}
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="POST" action="{{ url_for('main.edit_show', show_id=show.id) }}">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Show Information</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Basic Information -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Show Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ show.name }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="3">{{ show.description or '' }}</textarea>
+                    </div>
+                    
+                    <!-- Current Aliases -->
+                    <div class="mb-3">
+                        <label class="form-label">Current Aliases</label>
+                        <div>
+                            {% if show.aliases.count() > 0 %}
+                                {% for alias in show.aliases %}
+                                    <span class="badge bg-secondary me-1 mb-1">
+                                        {{ alias.alias }}
+                                        <button type="button" class="btn-close btn-close-white ms-1" 
+                                                aria-label="Remove" style="font-size: 0.7rem;"
+                                                onclick="removeAlias({{ alias.id }})"></button>
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">No aliases configured</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Add New Aliases -->
+                    <div class="mb-3">
+                        <label for="new_aliases" class="form-label">Add New Aliases</label>
+                        <input type="text" class="form-control" id="new_aliases" name="new_aliases"
+                               placeholder="Enter new aliases separated by commas">
+                        <small class="form-text text-muted">
+                            Add new alternative names or abbreviations
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Processing Settings</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Audio Format Settings -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="format" class="form-label">Default Output Format</label>
+                                <select class="form-select" id="format" name="format">
+                                    <option value="wav" {% if show.default_format == 'wav' %}selected{% endif %}>
+                                        WAV (Broadcast Standard)
+                                    </option>
+                                    <option value="mp3" {% if show.default_format == 'mp3' %}selected{% endif %}>
+                                        MP3 (Compressed)
+                                    </option>
+                                    <option value="aiff" {% if show.default_format == 'aiff' %}selected{% endif %}>
+                                        AIFF
+                                    </option>
+                                    <option value="flac" {% if show.default_format == 'flac' %}selected{% endif %}>
+                                        FLAC (Lossless)
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sample_rate" class="form-label">Sample Rate</label>
+                                <select class="form-select" id="sample_rate" name="sample_rate">
+                                    <option value="44100" {% if show.sample_rate == 44100 %}selected{% endif %}>
+                                        44.1 kHz (CD Quality)
+                                    </option>
+                                    <option value="48000" {% if show.sample_rate == 48000 %}selected{% endif %}>
+                                        48 kHz
+                                    </option>
+                                    <option value="32000" {% if show.sample_rate == 32000 %}selected{% endif %}>
+                                        32 kHz
+                                    </option>
+                                    <option value="22050" {% if show.sample_rate == 22050 %}selected{% endif %}>
+                                        22.05 kHz
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="bit_depth" class="form-label">Bit Depth</label>
+                                <select class="form-select" id="bit_depth" name="bit_depth">
+                                    <option value="16" {% if show.bit_depth == 16 %}selected{% endif %}>
+                                        16-bit (Standard)
+                                    </option>
+                                    <option value="24" {% if show.bit_depth == 24 %}selected{% endif %}>
+                                        24-bit (High Quality)
+                                    </option>
+                                    <option value="32" {% if show.bit_depth == 32 %}selected{% endif %}>
+                                        32-bit (Professional)
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="channels" class="form-label">Channels</label>
+                                <select class="form-select" id="channels" name="channels">
+                                    <option value="2" {% if show.channels == 2 %}selected{% endif %}>Stereo</option>
+                                    <option value="1" {% if show.channels == 1 %}selected{% endif %}>Mono</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Normalization Settings -->
+                    <hr>
+                    <h6>Audio Normalization</h6>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="normalize" 
+                                   name="normalize" {% if show.normalize %}checked{% endif %}>
+                            <label class="form-check-label" for="normalize">
+                                Enable automatic normalization
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3" id="normalize-settings" {% if not show.normalize %}style="display: none;"{% endif %}>
+                        <label for="normalize_level" class="form-label">Normalization Level (dB)</label>
+                        <input type="number" class="form-control" id="normalize_level" 
+                               name="normalize_level" value="{{ show.normalize_level }}" 
+                               min="-30" max="0" step="0.1">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Show Statistics -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Show Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Files Processed:</strong> {{ show.processed_files.count() }}</p>
+                            <p><strong>Created:</strong> {{ show.created_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Last Updated:</strong> {{ show.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                            <p><strong>Status:</strong> 
+                                {% if show.active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Buttons -->
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Save Changes
+                </button>
+                <a href="{{ url_for('main.shows') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Help Sidebar -->
+    <div class="col-lg-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle"></i> Show Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Show ID:</strong> {{ show.id }}</p>
+                
+                <h6>Recent Files</h6>
+                {% set recent_files = show.processed_files.order_by(ProcessedFile.processed_at.desc()).limit(5).all() %}
+                {% if recent_files %}
+                    <ul class="list-unstyled">
+                        {% for file in recent_files %}
+                            <li class="mb-1">
+                                <small>
+                                    <i class="bi bi-file-earmark-music"></i>
+                                    {{ file.original_filename[:25] }}{% if file.original_filename|length > 25 %}...{% endif %}
+                                    <br>
+                                    <span class="text-muted">
+                                        {{ file.processed_at.strftime('%m/%d/%y %I:%M %p') }}
+                                    </span>
+                                </small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No files processed yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Toggle normalization settings
+    $('#normalize').change(function() {
+        $('#normalize-settings').toggle(this.checked);
+    });
+});
+
+function removeAlias(aliasId) {
+    if (confirm('Remove this alias?')) {
+        // In a real app, this would make an AJAX call to remove the alias
+        // For now, just hide it
+        event.target.closest('.badge').style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

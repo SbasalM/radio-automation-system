@@ -1,0 +1,40 @@
+# Radio Workflow Automation System - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Web Framework
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Werkzeug==2.3.7
+
+# Database
+SQLAlchemy==2.0.21
+
+# Audio Processing
+mutagen==1.47.0          # Audio metadata handling
+pydub==0.25.1           # Audio file manipulation (optional, requires ffmpeg)
+
+# Form Validation (optional, for future use)
+Flask-WTF==1.1.1
+WTForms==3.0.1
+
+# Environment Variables (optional)
+python-dotenv==1.0.0
+
+# Logging
+python-json-logger==2.0.7
+
+# Testing (optional)
+pytest==7.4.2
+pytest-flask==1.2.0
+
+# Production Server (optional, for deployment)
+gunicorn==21.2.0
+
+# File Type Detection
+python-magic==0.4.27    # Better file type detection (optional)
+
+# Date/Time Handling
+python-dateutil==2.8.2
+
+# Development Tools (optional)
+flask-debugtoolbar==0.13.1

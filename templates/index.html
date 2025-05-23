@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Radio Automation System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h2 mb-4">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </h1>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row">
+    <div class="col-md-3 col-sm-6">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-3">
+                        <i class="bi bi-collection fs-1"></i>
+                    </div>
+                    <div class="col-9 text-end">
+                        <div class="fs-3">{{ total_shows }}</div>
+                        <div>Radio Shows</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-3">
+                        <i class="bi bi-file-earmark-music fs-1"></i>
+                    </div>
+                    <div class="col-9 text-end">
+                        <div class="fs-3">{{ total_files }}</div>
+                        <div>Files Processed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-3">
+                        <i class="bi bi-check-circle fs-1"></i>
+                    </div>
+                    <div class="col-9 text-end">
+                        <div class="fs-3">{{ success_rate }}%</div>
+                        <div>Success Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-3">
+                        <i class="bi bi-hdd fs-1"></i>
+                    </div>
+                    <div class="col-9 text-end">
+                        <div class="fs-3" id="storage-used">0 GB</div>
+                        <div>Storage Used</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-lightning"></i> Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('main.upload') }}" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Upload Audio Files
+                    </a>
+                    <a href="{{ url_for('main.add_show') }}" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Add New Show
+                    </a>
+                    <a href="{{ url_for('main.history') }}" class="btn btn-info">
+                        <i class="bi bi-clock-history"></i> View Processing History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-clock"></i> Recent Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_files %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>File</th>
+                                    <th>Show</th>
+                                    <th>Status</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in recent_files %}
+                                <tr>
+                                    <td>
+                                        <small>{{ file.original_filename[:30] }}{% if file.original_filename|length > 30 %}...{% endif %}</small>
+                                    </td>
+                                    <td>
+                                        {% if file.show %}
+                                            <span class="badge bg-secondary">{{ file.show.name }}</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if file.success %}
+                                            <i class="bi bi-check-circle text-success"></i>
+                                        {% else %}
+                                            <i class="bi bi-x-circle text-danger"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ file.processed_at.strftime('%I:%M %p') }}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-2">
+                        <a href="{{ url_for('main.history') }}" class="btn btn-sm btn-outline-primary">
+                            View All History
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0">No files processed yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Status -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-activity"></i> System Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Audio Processing</h6>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 100%">Operational</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Database</h6>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 100%">Connected</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>FFmpeg</h6>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: 100%" id="ffmpeg-status">Checking...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <small class="text-muted">Files Today</small>
+                        <h5 id="files-today-count">0</h5>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">This Week</small>
+                        <h5 id="files-week-count">0</h5>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">This Month</small>
+                        <h5 id="files-month-count">0</h5>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Average Processing Time</small>
+                        <h5 id="avg-processing-time">0s</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Update statistics on page load
+$(document).ready(function() {
+    // Check FFmpeg status
+    checkFFmpegStatus();
+    
+    // Update file counts
+    updateFileCounts();
+    
+    // Calculate storage used
+    calculateStorageUsed();
+});
+
+function checkFFmpegStatus() {
+    // In a real app, this would check via API
+    $('#ffmpeg-status').text('Installed');
+}
+
+function updateFileCounts() {
+    // In a real app, these would be fetched from API
+    $('#files-today-count').text('{{ recent_files|length }}');
+    $('#files-today').text('{{ recent_files|length }}');
+    $('#success-rate').text('{{ success_rate }}%');
+}
+
+function calculateStorageUsed() {
+    // In a real app, this would calculate actual storage
+    $('#storage-used').text('0.5 GB');
+}
+
+// Auto-refresh recent activity every 30 seconds
+setInterval(function() {
+    // In a real app, this would fetch new data
+    console.log('Refreshing activity...');
+}, 30000);
+</script>
+{% endblock %}

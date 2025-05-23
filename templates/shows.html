@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Shows - Radio Automation System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2">
+                <i class="bi bi-collection"></i> Radio Shows
+            </h1>
+            <a href="{{ url_for('main.add_show') }}" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Add New Show
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% if shows %}
+        {% for show in shows %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card show-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        {{ show.name }}
+                        {% if show.active %}
+                            <span class="badge bg-success float-end">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary float-end">Inactive</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if show.description %}
+                        <p class="card-text">{{ show.description }}</p>
+                    {% else %}
+                        <p class="card-text text-muted">No description provided</p>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <small class="text-muted">Format:</small><br>
+                            <strong>{{ show.default_format.upper() }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Sample Rate:</small><br>
+                            <strong>{{ show.sample_rate }} Hz</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Files Processed:</small><br>
+                            <strong>{{ show.processed_files.count() }}</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Normalize:</small><br>
+                            <strong>
+                                {% if show.normalize %}
+                                    <i class="bi bi-check-circle text-success"></i> Yes
+                                {% else %}
+                                    <i class="bi bi-x-circle text-danger"></i> No
+                                {% endif %}
+                            </strong>
+                        </div>
+                    </div>
+                    
+                    <!-- Show Aliases -->
+                    <div class="mb-3">
+                        <small class="text-muted">Aliases:</small><br>
+                        {% if show.aliases.count() > 0 %}
+                            {% for alias in show.aliases %}
+                                <span class="badge bg-secondary me-1">{{ alias.alias }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted">No aliases configured</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('main.edit_show', show_id=show.id) }}" 
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <button type="button" class="btn btn-sm btn-danger" 
+                                onclick="confirmDelete({{ show.id }}, '{{ show.name }}')">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>Added: {{ show.created_at.strftime('%B %d, %Y') }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle"></i> No shows configured yet. 
+                <a href="{{ url_for('main.add_show') }}">Add your first show</a> to get started!
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the show "<span id="show-name"></span>"?</p>
+                <p class="text-danger">
+                    <i class="bi bi-exclamation-triangle"></i> This action cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="delete-form" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Show</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(showId, showName) {
+    $('#show-name').text(showName);
+    $('#delete-form').attr('action', `/shows/${showId}/delete`);
+    $('#deleteModal').modal('show');
+}
+
+// Filter shows (future feature)
+function filterShows(searchTerm) {
+    $('.show-card').each(function() {
+        const showName = $(this).find('.card-title').text().toLowerCase();
+        if (showName.includes(searchTerm.toLowerCase())) {
+            $(this).parent().show();
+        } else {
+            $(this).parent().hide();
+        }
+    });
+}
+</script>
+{% endblock %}

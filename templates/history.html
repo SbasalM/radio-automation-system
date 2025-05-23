@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}File History - Radio Automation System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h2 mb-4">
+            <i class="bi bi-clock-history"></i> File Processing History
+        </h1>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('main.history') }}" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" class="form-control" id="search" name="search" 
+                               placeholder="Filename or show name">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="show_filter" class="form-label">Show</label>
+                        <select class="form-select" id="show_filter" name="show">
+                            <option value="">All Shows</option>
+                            <!-- In real app, populate with shows -->
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="status_filter" class="form-label">Status</label>
+                        <select class="form-select" id="status_filter" name="status">
+                            <option value="">All</option>
+                            <option value="success">Success</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="date_from" class="form-label">From Date</label>
+                        <input type="date" class="form-control" id="date_from" name="date_from">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="date_to" class="form-label">To Date</label>
+                        <input type="date" class="form-control" id="date_to" name="date_to">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- File History Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Processed Files</h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="exportHistory()">
+                        <i class="bi bi-download"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if files %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Filename</th>
+                                    <th>Show</th>
+                                    <th>Date</th>
+                                    <th>Duration</th>
+                                    <th>Size</th>
+                                    <th>Status</th>
+                                    <th>Processed</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in files %}
+                                <tr>
+                                    <td>
+                                        <i class="bi bi-file-earmark-music text-primary"></i>
+                                        {{ file.original_filename }}
+                                    </td>
+                                    <td>
+                                        {% if file.show %}
+                                            <span class="badge bg-primary">{{ file.show.name }}</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if file.extracted_date %}
+                                            {{ file.get_formatted_date() }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ file.get_duration_string() }}</td>
+                                    <td>{{ file.get_file_size_mb() }} MB</td>
+                                    <td>
+                                        {% if file.success %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Success
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger" 
+                                                  data-bs-toggle="tooltip" 
+                                                  title="{{ file.error_message }}">
+                                                <i class="bi bi-x-circle"></i> Failed
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ file.processed_at.strftime('%m/%d/%y %I:%M %p') }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-primary" 
+                                                    onclick="showFileDetails({{ file.id }})"
+                                                    data-bs-toggle="tooltip" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            {% if file.success and file.output_filename %}
+                                                <a href="{{ url_for('main.download_file', file_id=file.id) }}" 
+                                                   class="btn btn-outline-success"
+                                                   data-bs-toggle="tooltip" title="Download">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                            {% endif %}
+                                            <button type="button" class="btn btn-outline-danger" 
+                                                    onclick="reprocessFile({{ file.id }})"
+                                                    data-bs-toggle="tooltip" title="Reprocess">
+                                                <i class="bi bi-arrow-clockwise"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if pagination.pages > 1 %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                       href="{{ url_for('main.history', page=pagination.prev_num) }}">
+                                        Previous
+                                    </a>
+                                </li>
+                                
+                                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                    {% if page_num %}
+                                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                            <a class="page-link" 
+                                               href="{{ url_for('main.history', page=page_num) }}">
+                                                {{ page_num }}
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                                    <a class="page-link" 
+                                       href="{{ url_for('main.history', page=pagination.next_num) }}">
+                                        Next
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-3">No files have been processed yet.</p>
+                        <a href="{{ url_for('main.upload') }}" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Upload Your First File
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- File Details Modal -->
+<div class="modal fade" id="fileDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">File Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="file-details-content">
+                <!-- Details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showFileDetails(fileId) {
+    // Load file details via AJAX
+    $.get(`/api/file-info/${fileId}`, function(data) {
+        let content = `
+            <table class="table">
+                <tr><th>Original Filename:</th><td>${data.original_filename}</td></tr>
+                <tr><th>Show:</th><td>${data.show_name}</td></tr>
+                <tr><th>Broadcast Date:</th><td>${data.date}</td></tr>
+                <tr><th>Duration:</th><td>${data.duration}</td></tr>
+                <tr><th>File Size:</th><td>${data.size_mb} MB</td></tr>
+                <tr><th>Format:</th><td>${data.format.toUpperCase()}</td></tr>
+                <tr><th>Sample Rate:</th><td>${data.sample_rate} Hz</td></tr>
+                <tr><th>Bit Depth:</th><td>${data.bit_depth}-bit</td></tr>
+                <tr><th>Channels:</th><td>${data.channels === 1 ? 'Mono' : 'Stereo'}</td></tr>
+                <tr><th>Processed At:</th><td>${data.processed_at}</td></tr>
+                <tr><th>Status:</th><td>${data.success ? 
+                    '<span class="badge bg-success">Success</span>' : 
+                    '<span class="badge bg-danger">Failed</span>'}</td></tr>
+            </table>
+        `;
+        
+        if (!data.success && data.error_message) {
+            content += `<div class="alert alert-danger mt-3">
+                <strong>Error:</strong> ${data.error_message}
+            </div>`;
+        }
+        
+        $('#file-details-content').html(content);
+        $('#fileDetailsModal').modal('show');
+    });
+}
+
+function reprocessFile(fileId) {
+    if (confirm('Reprocess this file with current settings?')) {
+        // In real app, this would trigger reprocessing
+        alert('Reprocessing feature coming soon!');
+    }
+}
+
+function exportHistory() {
+    // In real app, this would export to CSV
+    alert('Export feature coming soon!');
+}
+
+// Initialize date inputs with today's date
+$(document).ready(function() {
+    const today = new Date().toISOString().split('T')[0];
+    if (!$('#date_to').val()) {
+        $('#date_to').val(today);
+    }
+});
+</script>
+{% endblock %}

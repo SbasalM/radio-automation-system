@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Show - Radio Automation System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h2 mb-4">
+            <i class="bi bi-plus-circle"></i> Add New Radio Show
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="POST" action="{{ url_for('main.add_show') }}">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Show Information</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Basic Information -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Show Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" required
+                               placeholder="e.g., Focus On The Family">
+                        <small class="form-text text-muted">
+                            Enter the full, official name of the radio show
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="Brief description of the show"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="aliases" class="form-label">Aliases</label>
+                        <input type="text" class="form-control" id="aliases" name="aliases"
+                               placeholder="e.g., FOF, FOTF, FocusOnTheFamily">
+                        <small class="form-text text-muted">
+                            Enter alternative names or abbreviations, separated by commas. 
+                            These will be used to match filenames.
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Processing Settings</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Audio Format Settings -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="format" class="form-label">Default Output Format</label>
+                                <select class="form-select" id="format" name="format">
+                                    <option value="wav" selected>WAV (Broadcast Standard)</option>
+                                    <option value="mp3">MP3 (Compressed)</option>
+                                    <option value="aiff">AIFF</option>
+                                    <option value="flac">FLAC (Lossless)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sample_rate" class="form-label">Sample Rate</label>
+                                <select class="form-select" id="sample_rate" name="sample_rate">
+                                    <option value="44100" selected>44.1 kHz (CD Quality)</option>
+                                    <option value="48000">48 kHz</option>
+                                    <option value="32000">32 kHz</option>
+                                    <option value="22050">22.05 kHz</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="bit_depth" class="form-label">Bit Depth</label>
+                                <select class="form-select" id="bit_depth" name="bit_depth">
+                                    <option value="16" selected>16-bit (Standard)</option>
+                                    <option value="24">24-bit (High Quality)</option>
+                                    <option value="32">32-bit (Professional)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="channels" class="form-label">Channels</label>
+                                <select class="form-select" id="channels" name="channels">
+                                    <option value="2" selected>Stereo</option>
+                                    <option value="1">Mono</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Normalization Settings -->
+                    <hr>
+                    <h6>Audio Normalization</h6>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="normalize" 
+                                   name="normalize" checked>
+                            <label class="form-check-label" for="normalize">
+                                Enable automatic normalization
+                            </label>
+                            <small class="form-text text-muted d-block">
+                                Automatically adjust audio levels to broadcast standards
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3" id="normalize-settings">
+                        <label for="normalize_level" class="form-label">Normalization Level (dB)</label>
+                        <input type="number" class="form-control" id="normalize_level" 
+                               name="normalize_level" value="-1.0" min="-30" max="0" step="0.1">
+                        <small class="form-text text-muted">
+                            Standard broadcast level is -1.0 dB
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Buttons -->
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Create Show
+                </button>
+                <a href="{{ url_for('main.shows') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Help Sidebar -->
+    <div class="col-lg-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-question-circle"></i> Quick Help
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Show Name</h6>
+                <p>Use the official show name as it appears in your programming schedule.</p>
+                
+                <h6>Aliases</h6>
+                <p>Aliases help the system recognize files. For example, if files are named 
+                   "FOF_102324.wav", add "FOF" as an alias for "Focus On The Family".</p>
+                
+                <h6>Audio Settings</h6>
+                <ul>
+                    <li><strong>WAV:</strong> Best for radio automation systems</li>
+                    <li><strong>44.1 kHz:</strong> Standard CD quality</li>
+                    <li><strong>16-bit:</strong> Standard for broadcast</li>
+                    <li><strong>Stereo:</strong> Use unless show is mono</li>
+                </ul>
+                
+                <h6>Normalization</h6>
+                <p>Ensures consistent volume levels across all shows. -1.0 dB is the 
+                   industry standard for broadcast.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Toggle normalization settings
+    $('#normalize').change(function() {
+        $('#normalize-settings').toggle(this.checked);
+    });
+    
+    // Validate form before submission
+    $('form').submit(function(e) {
+        const name = $('#name').val().trim();
+        if (!name) {
+            e.preventDefault();
+            alert('Please enter a show name');
+            $('#name').focus();
+            return false;
+        }
+        
+        // Clean up aliases
+        const aliases = $('#aliases').val();
+        if (aliases) {
+            // Remove extra spaces and ensure comma separation
+            const cleanAliases = aliases.split(',')
+                .map(a => a.trim())
+                .filter(a => a.length > 0)
+                .join(', ');
+            $('#aliases').val(cleanAliases);
+        }
+    });
+});
+</script>
+{% endblock %}
