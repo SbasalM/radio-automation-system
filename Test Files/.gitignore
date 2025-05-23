@@ -1,0 +1,25 @@
+# OneDrive files
+*.tmp
+~$*
+.~*
+desktop.ini
+
+# Python files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+instance/
+*.db
+
+# Uploaded/processed files
+uploads/*
+processed/*
+!uploads/.gitkeep
+!processed/.gitkeep
+
+# Logs
+logs/
+*.log
