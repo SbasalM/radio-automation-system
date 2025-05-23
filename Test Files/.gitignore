@@ -23,3 +23,6 @@ processed/*
 # Logs
 logs/
 *.log
+
+# Test Files
+Test Files/
